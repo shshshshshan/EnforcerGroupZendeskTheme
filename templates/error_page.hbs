@@ -1,0 +1,28 @@
+<div class="section-separator"></div>
+
+<div class="container">
+	<div class="banner">
+    <div class="error-page">
+      <h1 class="fw-bold fs-900 text-accent-400 text-capitalize padding-block-800">{{t 'oops'}}</h1>
+
+      {{#is error 'unauthorized'}}
+        <h2 class="fw-semi-bold fs-800 text-primary-400">{{link 'sign_in'}}</h2>
+      {{/is}}
+
+      {{#is error 'forbidden'}}
+        <h2 class="fw-semi-bold fs-800 text-primary-400">{{t 'not_authorized'}}</h2>
+      {{/is}}
+
+      {{#is error 'not_found'}}
+        <h2 class="fw-semi-bold fs-800 text-primary-400 padding-block-200">{{t 'nonexistent_page'}}</h2>
+        <p class="fs-400 text-neutral-800">{{t 'mistyped_address_or_moved_page'}}</p>
+      {{/is}}
+
+      <div class="padding-block-400">
+        {{#link 'help_center'}}
+          {{t 'back_to_homepage'}}
+        {{/link}}
+      </div>
+    </div>
+  </div>
+</div>

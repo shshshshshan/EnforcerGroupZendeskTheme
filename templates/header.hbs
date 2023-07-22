@@ -1,0 +1,40 @@
+<header class="bg-primary-100"> 
+  <div class="container">
+    <div class="nav-wrapper | section-focus-visible">
+      <button class="button" data-action="back-to-store">
+        <a href="https://www.enforcergroup.com.au/" tabindex="-1">
+          <img src="{{asset 'arrow.png'}}"/>
+          <span class="text-neutral-100">Back to Store</span>
+        </a>
+      </button>
+      <a href="https://www.enforcergroup.com.au/">
+        <img src="{{asset 'logo.png'}}" class="logo"/>
+      </a>
+      <div class="account-menu">
+        {{#unless signed_in}}
+          {{#link "sign_in"}}
+              <img src="{{asset 'use.png'}}" alt=""> Sign in 
+          {{/link}}
+        {{/unless}}
+        {{#if signed_in}}
+          <div class="user-info dropdown">
+            <button class="user-info dropdown-toggle" aria-haspopup="true">
+              <img src="{{asset 'use.png'}}"/>
+              {{user_name}}
+            </button>
+            <div class="dropdown-menu" role="menu">
+              {{#my_profile role="menuitem"}}{{t 'profile'}}{{/my_profile}}
+              {{link "requests" role="menuitem"}}
+              {{#link "contributions" role="menuitem"}}{{t "activities"}}{{/link}}
+              {{contact_details role="menuitem"}}
+              {{change_password role="menuitem"}}
+              <div class="separator" role="separator"></div>
+              {{link "sign_out" role="menuitem"}}
+            </div>
+          </div>
+        {{/if}}
+      </div>
+      
+    </div>
+  </div>
+</header>
