@@ -1,5 +1,24 @@
 (function () {
   'use strict';
+  // Inquiry form persistent active state when input is populated
+  const inputGroup = document.querySelectorAll('.input-group');
+  inputGroup.forEach(input => {
+    const userInput = input.querySelector('.user-input');
+    
+    if (!userInput)
+      return;
+    
+    userInput.addEventListener('focusout', (event) => {
+      const inputPlaceholder = input.querySelector('.inquiry-label');
+      
+      if (event.currentTarget.value)
+      	inputPlaceholder.classList.add('has-input');
+      else 
+        inputPlaceholder.classList.remove('has-input');
+      
+    });
+  });
+  
   // Quick links and tab links DOM
   const quickLinks = document.querySelectorAll('.quick-links-item');
   const tabLinks = document.querySelectorAll('.tab-links-item');
@@ -29,21 +48,23 @@
   // Dynamic preview
   function previewSection(event) {
     previewDOMDesktop.querySelector('.info-contents').classList.remove('display-none');
-    previewDOMDesktop.querySelector('.preview-hint').classList.add('display-none');
     
     const listItem = event.currentTarget;
     const listItemTitle = listItem.querySelector('.button[data-type="product-category-item"]').innerHTML;
     const previewTitle = previewDOMDesktop.querySelector('h2.title');
     const parentID = listItem.getAttribute('data-parent-id');
     const sidebarHeaderTitle = articleView.querySelector('.article-section-header');
+    const breadcrumbs = previewDOMDesktop.querySelector('.breadcrumbs');
     
   	if (!listItem.getAttribute('data-sub-list-parent') && parentID)
-    {
-      const parentList = listItem.parentElement.querySelector(`li[data-sub-list-parent="true"][data-parent-id=${parentID}]`);
-      previewTitle.innerHTML = `${sidebarHeaderTitle.innerHTML} > ${parentList.querySelector('button').innerHTML} > ${listItemTitle}`;
-    }
-    else 
-    	previewTitle.innerHTML = `${sidebarHeaderTitle.innerHTML} > ${listItemTitle}`;
+  	{
+  		const parentList = listItem.parentElement.querySelector(`li[data-sub-list-parent="true"][data-parent-id=${parentID}]`);
+  		breadcrumbs.innerHTML = `${sidebarHeaderTitle.innerHTML} > ${parentList.querySelector('button').innerHTML} > ${listItemTitle}`;
+  	}
+  	else 
+  		breadcrumbs.innerHTML = `${sidebarHeaderTitle.innerHTML} > ${listItemTitle}`;
+    
+    previewTitle.innerHTML = listItemTitle;
     
     const previewBody = previewDOMDesktop.querySelector('.info-contents');
     [...previewBody.children].forEach(infoContent => {
@@ -70,15 +91,8 @@
       if (!chevron)
         return;
       
-      // Do not remove, this is to populate chevron class list of default of none
-      // Causes error if no class list
-      chevron.classList.add('|');
-      
-      if (!chevron.classList.contains('rotate-counter-clockwise'))
-        return;
-      
       const infoToggle = wrapper.querySelector('.info-toggle');
-      chevron.classList.remove('rotate-counter-clockwise');
+      chevron.style = "";
       infoToggle.setAttribute('data-content', 'false');
       const accordionContent = wrapper.querySelector('.info-accordion-content');
       accordionContent.classList.add('display-none');
@@ -91,7 +105,6 @@
       
       const accordionItemWrapper = accordionItem.parentElement;
       const chevron = accordionItemWrapper.querySelector('.info-toggle svg');
-      chevron.classList.toggle('rotate-counter-clockwise');
       
       // Toggle data-content attribute
       const accordionContent = accordionItemWrapper.nextElementSibling;
@@ -99,11 +112,13 @@
       {
         accordionItemWrapper.setAttribute('data-content', 'false');
       	accordionContent.classList.add('display-none');
+        chevron.style.transform = 'rotate(90deg)';
       }
       else 
     	{
         accordionItemWrapper.setAttribute('data-content', 'true');
       	accordionContent.classList.remove('display-none');
+        chevron.style.transform = 'rotate(-90deg)';
       }
       
     });
@@ -129,7 +144,6 @@
         const previewDOMContent = [...previewDOMDesktop.children].filter(child => child.getAttribute('data-preview') !== 'read-more');
         previewDOMContent.forEach(dom => dom.classList.remove('display-none'));
         readMoreWindow.classList.add('display-none');
-        previewDOMDesktop.querySelector('.preview-hint').classList.add('display-none');
         readMoreWindow.innerHTML = '';
       });
     });
@@ -190,7 +204,6 @@
   function subListEventHandler(event, parent, tabLink) {
     readMoreWindow.classList.add('display-none');
     previewDOMTitle.classList.remove('display-none');
-    previewDOMDesktop.querySelector('.preview-hint').classList.add('display-none');
     contentReadMoreDOMDesktop.forEach(readMore => { readMore.classList.remove('display-none'); });
     highlightTabLink(tabLink);
     highlightParent(parent);
@@ -207,7 +220,6 @@
   function nonSubListEventHandler(event, tabLink) {
     readMoreWindow.classList.add('display-none');
     previewDOMTitle.classList.remove('display-none');
-    previewDOMDesktop.querySelector('.preview-hint').classList.add('display-none');
     contentReadMoreDOMDesktop.forEach(readMore => { readMore.classList.remove('display-none'); });
     highlightTabLink(tabLink);
     persistActiveState([...quickLinks, ...articleListItems], event);
@@ -239,7 +251,6 @@
     if (!readMoreWindow.classList.contains('display-none')) {
       readMoreWindow.classList.add('display-none');
       previewDOMTitle.classList.remove('display-none');
-      previewDOMDesktop.querySelector('.preview-hint').classList.add('display-none');
       contentReadMoreDOMDesktop.forEach(readMore => { readMore.classList.remove('display-none'); });
     }
     
@@ -253,10 +264,6 @@
     const tabTitle = linkItem.querySelector('.label');
     sidebarHeaderTitle.innerHTML = tabTitle.innerHTML;
     previewWindowTitle.innerHTML = tabTitle.innerHTML;
-    previewDOMDesktop.querySelector('.info-contents').classList.add('display-none');
-    previewDOMDesktop.querySelector('.preview-hint').classList.remove('display-none');
-    
-    
     
     const dataLink = linkItem.getAttribute('data-link');
     const sidebarLinks = articleView.querySelectorAll('ul');
@@ -269,8 +276,47 @@
     });
     
     // Reset sidebar active state if tab is clicked
+    // Active state for first sidebar item
     sidebarLinks.forEach((sidebarLink) => {
-      sidebarLink.querySelectorAll('li').forEach(listItem => { listItem.classList.remove('active'); });
+      const sidebarLinkChildren = sidebarLink.querySelectorAll('li');
+      for (let i = 0; i < sidebarLinkChildren.length; i++) {
+        if (i == 0)
+        {
+        	sidebarLinkChildren[i].classList.add('active');
+          continue;
+        }
+        
+        sidebarLinkChildren[i].classList.remove('active');
+      }
+    });
+    
+    // Show first sidebar link contents
+    previewDOMDesktop.querySelector('.info-contents').classList.remove('display-none');
+    
+    const activeSidebar = [...sidebarLinks].find(sidebar => !sidebar.classList.contains('display-none'));
+		const activeSidebarLink = [...activeSidebar.children].find(link => link.classList.contains('active'));
+    const listItemTitle = activeSidebarLink.querySelector('.button[data-type="product-category-item"]').innerHTML;
+    const previewTitle = previewDOMDesktop.querySelector('h2.title');
+    const parentID = activeSidebarLink.getAttribute('data-parent-id');
+    const breadcrumbs = previewDOMDesktop.querySelector('.breadcrumbs');
+    
+  	if (!activeSidebarLink.getAttribute('data-sub-list-parent') && parentID)
+  	{
+  		const parentList = activeSidebarLink.parentElement.querySelector(`li[data-sub-list-parent="true"][data-parent-id=${parentID}]`);
+  		breadcrumbs.innerHTML = `${sidebarHeaderTitle.innerHTML} > ${parentList.querySelector('button').innerHTML} > ${listItemTitle}`;
+  	}
+  	else 
+  		breadcrumbs.innerHTML = `${sidebarHeaderTitle.innerHTML} > ${listItemTitle}`;
+    
+    previewTitle.innerHTML = listItemTitle;
+    
+    const previewBody = previewDOMDesktop.querySelector('.info-contents');
+    [...previewBody.children].forEach(infoContent => {
+    	infoContent.classList.add('display-none');
+      
+      if (infoContent.getAttribute('data-article-id') === activeSidebarLink.getAttribute('data-article-id') && 
+         infoContent.getAttribute('data-link') === activeSidebarLink.parentElement.getAttribute('data-link'))
+      			infoContent.classList.remove('display-none');
     });
     
     articleView.scrollIntoView({behavior: 'smooth'});
@@ -299,7 +345,6 @@
     if (!readMoreWindow.classList.contains('display-none')) {
       readMoreWindow.classList.add('display-none');
       previewDOMTitle.classList.remove('display-none');
-      previewDOMDesktop.querySelector('.preview-hint').classList.add('display-none');
       contentReadMoreDOMDesktop.forEach(readMore => { readMore.classList.remove('display-none'); });
     }
     
@@ -321,7 +366,6 @@
     sidebarHeaderTitle.innerHTML = tabTitle.innerHTML;
     previewWindowTitle.innerHTML = tabTitle.innerHTML;
     previewDOMDesktop.querySelector('.info-contents').classList.add('display-none');
-    previewDOMDesktop.querySelector('.preview-hint').classList.remove('display-none');
     
     const dataLink = linkItem.getAttribute('data-link');
     const sidebarLinks = articleView.querySelectorAll('ul');
@@ -339,13 +383,14 @@
     });
     
     previewDOMDesktop.querySelector('.info-contents').classList.remove('display-none');
-    previewDOMDesktop.querySelector('.preview-hint').classList.add('display-none');
     
     const previewTitle = previewDOMDesktop.querySelector('h2.title');
     const previewBody = previewDOMDesktop.querySelector('.info-contents');
     const sectionTitle = linkItem.querySelector('.quick-links-title h2');
+    const breadcrumbs = previewDOMDesktop.querySelector('.breadcrumbs');
     
-    previewTitle.innerHTML = `${sidebarHeaderTitle.innerHTML} > ${sectionTitle.innerHTML}`;
+    breadcrumbs.innerHTML = `${sidebarHeaderTitle.innerHTML} > ${sectionTitle.innerHTML}`;
+    previewTitle.innerHTML = sectionTitle.innerHTML;
     
     [...previewBody.children].forEach(infoContent => {
     	infoContent.classList.add('display-none');
